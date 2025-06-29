@@ -4,7 +4,7 @@
 
 / {
     behaviors {
-        ht_num_func: homerow_mod {
+        hm: homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "tap-preferred";
@@ -15,7 +15,7 @@
         };
 
         // Left-hand HRM
-        htl: left_side_homerow_mod {
+        hml: left_side_homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
@@ -28,7 +28,7 @@
         };
 
         // Right-hand HRM
-        htr: right_side_homerow_mod {
+        hmr: right_side_homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
