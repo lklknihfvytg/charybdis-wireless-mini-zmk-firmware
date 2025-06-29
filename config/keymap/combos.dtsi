@@ -1,11 +1,4 @@
-#define BASE   0
-#define NUM    1
-#define NAV    2
-#define MEDIA  3
-#define ADJ    4
-#define MOUSE  5
-#define SLOW   6
-#define SCROLL 7
+#include "layers.dtsi"
 
 / {
     combos {
