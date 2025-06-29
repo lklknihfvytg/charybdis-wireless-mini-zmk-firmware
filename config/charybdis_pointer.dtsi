@@ -1,6 +1,6 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
-#include "./keymap/layers.dtsi"
+#include "/keymap/layers.dtsi"
 
 &trackball_listener {
     /* base processor chain on all layers */
