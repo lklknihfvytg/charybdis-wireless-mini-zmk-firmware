@@ -1,13 +1,22 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
 
+#define BASE   0
+#define NUM    1
+#define NAV    2
+#define MEDIA  3
+#define ADJ    4
+#define MOUSE  5
+#define SLOW   6
+#define SCROLL 7
+
 &trackball_listener {
     /* base processor chain on all layers */
-    input-processors = <&zip_xy_scaler 6 5>;
+    input-processors = <&zip_xy_scaler 6 5>; // , <&zip_temp_layer MOUSE 400>
 
     /* layer-8 scroll override */
     scroller: scroller {
-        layers           = <8>;
+        layers           = <SCROLL>;
         input-processors = <
             &zip_xy_to_scroll_mapper                         // Converts XY movement to scroll events
             &zip_scroll_scaler 1 6                           // Scales the scroll speed (e.g., 1/6 speed)
@@ -17,7 +26,7 @@
 
     /* layer-7 slow-pointer override */
     slow_pointer: slow_pointer {
-        layers           = <7>;
+        layers           = <SLOW>;
         input-processors = <&zip_xy_scaler 1 6>;
     };
 };
