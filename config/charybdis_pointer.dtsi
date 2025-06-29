@@ -1,14 +1,6 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
-
-#define BASE   0
-#define NUM    1
-#define NAV    2
-#define MEDIA  3
-#define ADJ    4
-#define MOUSE  5
-#define SLOW   6
-#define SCROLL 7
+#include "keymap/layers.dtsi"
 
 &trackball_listener {
     /* base processor chain on all layers */
