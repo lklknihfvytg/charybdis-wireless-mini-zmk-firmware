@@ -15,7 +15,7 @@
         };
 
         // Left-hand HRM
-        ht_left: left_side_homerow_mod {
+        htl: left_side_homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
@@ -28,7 +28,7 @@
         };
 
         // Right-hand HRM
-        ht_right: right_side_homerow_mod {
+        htr: right_side_homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
             flavor = "balanced";
