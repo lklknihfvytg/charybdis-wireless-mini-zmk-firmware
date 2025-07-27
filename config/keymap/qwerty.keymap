@@ -28,10 +28,6 @@
 #define THUMBS 36 37 38 39 40  // Thumb keys.
 
 / {
-    chosen { zmk,matrix_transform = &default_transform; };
-};
-
-/ {
     combos {
         compatible = "zmk,combos";
 
