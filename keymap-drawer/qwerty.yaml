@@ -1,4 +1,4 @@
-layout: {zmk_keyboard: qwerty, layout_name: default_transform}
+layout: {zmk_keyboard: qwerty}
 layers:
   BASE:
   - ESC
