@@ -35,7 +35,7 @@ layers:
   - {t: M, h: SCROLL}
   - ','
   - .
-  - /
+  - {t: /, h: MOUSE}
   - {t: ']', h: SLOW}
   - DEL
   - NUMBERS
@@ -161,7 +161,7 @@ layers:
   - PREV
   - PP
   - NEXT
-  - ''
+  - MOUSE
   - ''
   - ''
   - ''
