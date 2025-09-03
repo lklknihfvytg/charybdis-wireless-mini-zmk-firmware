@@ -116,11 +116,11 @@ layers:
   - Ctl+ F9
   - Ctl+ F12
   - F16
+  - PREV
+  - PP
+  - NEXT
+  - F22
   - F23
-  - ''
-  - ''
-  - ''
-  - ''
   - Sft+ F17
   - Sft+ F16
   - Sft+ F15
