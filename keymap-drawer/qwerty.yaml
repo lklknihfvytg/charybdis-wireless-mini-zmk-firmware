@@ -25,7 +25,7 @@ layers:
   - {t: L, h: RALT}
   - {t: ;, h: RGUI}
   - ''''
-  - MOUSE
+  - MEDIA
   - Z
   - X
   - C
@@ -82,7 +82,7 @@ layers:
   - Sft+ F17
   - {t: Sft+ F16, type: held}
   - Sft+ F15
-  - ''
+  - LSHFT
   - ''
   NAVIGATION:
   - ''
@@ -166,7 +166,7 @@ layers:
   - ''
   - ''
   - ''
-  - {t: PLAY PAUSE, type: held}
+  - PLAY PAUSE
   - RET
   ADJUST:
   - BOOT LDR
@@ -235,7 +235,7 @@ layers:
   - '&mkp MB3'
   - ''
   - ''
-  - {type: held}
+  - ''
   - ''
   - ''
   - ''
@@ -245,7 +245,7 @@ layers:
   - SCROLL
   - ''
   - ''
-  - ''
+  - {type: held}
   - ''
   - '&mkp MB3'
   - '&mkp MB1'
