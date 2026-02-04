@@ -24,6 +24,11 @@ jobs:
       uses: actions/setup-python@v4
       with: { python-version: "3.x" }
 
+    - name: Fix apt timeout
+      run: |
+        echo 'Acquire::ForceIPv4 "true";' | sudo tee /etc/apt/apt.conf.d/99force-ipv4
+        sudo apt update -o Acquire::ForceIPv4=true
+
     - name: OS deps
       run: sudo apt-get update && sudo apt-get install -y jq
 
