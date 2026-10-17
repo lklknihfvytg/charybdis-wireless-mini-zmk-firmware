@@ -32,7 +32,7 @@ jobs:
     - name: OS deps
       run: sudo apt-get update && sudo apt-get install -y jq
 
-    # - name: Generate extra keymaps
+    # - name: Generate extra keymaps 
     #   run: |
     #     echo "⚙️ Generating additional keymaps"
     #     mv config/keymap/charybdis.keymap config/keymap/qwerty.keymap
