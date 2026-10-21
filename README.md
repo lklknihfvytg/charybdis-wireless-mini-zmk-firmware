@@ -143,11 +143,13 @@ You can easily build your firmware locally or leverage GitHub Actions:
 
 **Local Build (recommended for quick testing and debugging)**
 
-Clone this repo, then run these commands from the repo root:
+Clone this repo, then build all three dongle images from the repo root:
 ```sh
-cd local-build
-docker-compose run --rm builder
+docker compose -f local-build/docker-compose.yml run --rm builder bash ./local-build/build_single.sh qwerty dongle
 ```
+The files are saved in `firmwares/charybdis_dongle/qwerty/`. Use `bt` as the
+second script argument for the two Bluetooth images. Local builds and GitHub
+Actions share the target definitions in `build.yaml` and the same build script.
 See the [local build README](local-build/README.md) for additional details, including how to enable USB logging in the builds.
 
 **GitHub Actions**

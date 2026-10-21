@@ -6,7 +6,7 @@ This setup provides a **fast, containerized build environment** for [ZMK Firmwar
 - **No GitHub Actions delay**
 - **No toolchain installation required**
 - **Cross-platform, reproducible builds**
-- **Automatic shield and keymap discovery**
+- **Shared build targets and automatic keymap discovery**
 - **PMW3610 driver integration**
 - **Isolated build sandboxes for each shield**
 - **ZMK Studio USB-UART support**
@@ -60,6 +60,18 @@ injected shields cannot take precedence. Their shared matrix lives in
 `build_setup.sh` is a compatibility wrapper around the cached `build_single.sh`
 builder; it no longer copies the entire workspace into temporary directories.
 
+`build.yaml` is the single target list for both local builds and GitHub Actions:
+board, shields, side-specific configuration, Studio snippet and output names.
+`scripts/generate_matrix.py` reads it and discovers keymaps in `config/keymap/`.
+CI invokes the same `build_single.sh`, including configuration and UF2 checks.
+To build a settings-reset image, use the same command with `default reset`.
+The result is `firmwares/settings_reset.uf2`; reset builds do not load a user
+keymap or the normal Charybdis configuration.
+
+The selected firmware files are copied to `firmwares/` only after every selected
+target passes compilation and validation. A failed target leaves the previous
+published bundle intact. A one-side build replaces only that side's file.
+
 To check all three dongle configurations without compiling firmware:
 
 ```bash
@@ -68,8 +80,8 @@ docker compose -f local-build/docker-compose.yml run --rm -e CONFIGURE_ONLY=1 bu
 
 Every normal build runs the same configuration check before compilation. It rejects missing flash storage, incorrect split roles, disabled BLE, and a right half without the sensor power rail. Configuration-only runs leave existing UF2 files untouched; they are not new firmware builds.
 
-The current pointer profile uses 800 CPI with a 1/1 movement scale (2.5 times
-the saved 2026-10-21 checkpoint's speed). The sensor uses its default 8 ms active
+The current pointer profile uses 800 CPI with a 1/1 movement scale, matching
+the saved hardware-tested baseline. The sensor uses its default 8 ms active
 RUN period; `CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN=0` forwards each motion
 sample without another software rate limiter. This targets about 125 samples/s
 before BLE transport; the actual USB report cadence depends on the radio link.
@@ -90,11 +102,11 @@ and simultaneous key traffic. This does not prove that previous stutters were
 queue overflows. Transmit power, connection interval/latency, sensor timing,
 and sleep settings remain unchanged from the first pointer profile.
 
-A 30-second Windows Raw Input test of the first pointer profile recorded about
-70 nonzero motion events/s, with median gaps around 14 ms and some gaps over
-100 ms, both with and without typing. The revised BLE/buffer configuration
-still needs the same test after flashing; configured sensor timing is not a
-measurement of host cursor smoothness.
+A 30-second Windows Raw Input test of the revised BLE/buffer profile recorded
+about 86 nonzero motion events/s without typing and 87 with typing, with median
+gaps around 8 ms. Some long gaps remain; battery life has not been measured.
+These measurements describe the saved baseline, before the structural changes
+from upstream; those changes still need hardware validation.
 
 ### 3. Firmware Output
 
@@ -168,7 +180,7 @@ measurement; physical pauses and Windows event batching can affect the results.
 
 - Enable USB logging to troubleshoot the firmware while it's running.
   - This is disabled by default since it has a significant negative impact on battery life
-  - To turn it on, enable the variable at the top of the [build script](local-build/build_setup.sh), then follow instructions [here](https://zmk.dev/docs/development/usb-logging) to see the log stream on your computer.
+  - For a diagnostic build, set `CONFIG_ZMK_USB_LOGGING=y` in the relevant side's configuration, then follow [ZMK's logging instructions](https://zmk.dev/docs/development/usb-logging). Restore the normal configuration afterward.
   - Since this is a split keyboard you'll likely have to use `sudo tio /dev/ttyACM1` or `sudo tio /dev/ttyACM2` depending on what side you want to see logs for.
     - If you don't know what tty devices your system can see, run this command to find out `ls -l /dev/serial/by-id`
     - To see the PMW3610 sensor logs you'll also need to enable the following Kconfig options in `config/charybdis_right.conf`

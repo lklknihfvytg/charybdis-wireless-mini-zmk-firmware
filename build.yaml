@@ -1,26 +1,34 @@
-# This file generates the GitHub Actions matrix.
-
-board:
-  - nice_nano@2.0.0/nrf52840/zmk
-
-shield:
-  - charybdis_left_bt
-  - charybdis_right_bt
-  - charybdis_left_dongle
-  - charybdis_right_dongle
-  - charybdis_dongle_central
-  - settings_reset
-
-format:
-  - bt
-  - dongle
-  - reset
-
-keymap:
-  - qwerty
-
+# Shared by local-build/build_single.sh and scripts/generate_matrix.py (CI).
+board: nice_nano@2.0.0/nrf52840/zmk
 include:
-  - board: nice_nano@2.0.0/nrf52840/zmk
+  - format: bt
+    side: left
+    shield: charybdis_left_bt
+    extra_conf_files: [charybdis.conf, charybdis_left.conf]
+    output: charybdis_left.uf2
+  - format: bt
+    side: right
     shield: charybdis_right_bt
-    keymap: qwerty
+    extra_conf_files: [charybdis.conf, charybdis_right.conf]
     snippet: studio-rpc-usb-uart
+    output: charybdis_right.uf2
+  - format: dongle
+    side: dongle
+    shield: charybdis_dongle_central
+    extra_conf_files: [charybdis.conf]
+    output: charybdis_dongle.uf2
+  - format: dongle
+    side: left
+    shield: charybdis_left_dongle
+    extra_conf_files: [charybdis.conf, charybdis_left.conf]
+    output: charybdis_left.uf2
+  - format: dongle
+    side: right
+    shield: charybdis_right_dongle
+    extra_conf_files: [charybdis.conf, charybdis_right.conf]
+    output: charybdis_right.uf2
+  - format: reset
+    side: reset
+    shield: settings_reset
+    extra_conf_files: []
+    output: settings_reset.uf2
