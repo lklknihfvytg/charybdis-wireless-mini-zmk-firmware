@@ -2,3 +2,9 @@ config ZMK_BEHAVIOR_BATTERY_TEXT
 	bool "Battery text behavior"
 	depends on DT_HAS_ZMK_BEHAVIOR_BATTERY_TEXT_ENABLED
 	default y
+
+config CHARYBDIS_SCROLL_SNAP
+	bool "Charybdis scroll axis lock"
+	default y
+	depends on DT_HAS_CHARYBDIS_INPUT_PROCESSOR_SCROLL_SNAP_ENABLED
+	depends on ZMK_POINTING && (!ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL)

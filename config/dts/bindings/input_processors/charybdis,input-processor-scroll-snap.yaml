@@ -1,0 +1,13 @@
+description: Lock trackball scrolling to the dominant axis of a gesture
+compatible: "charybdis,input-processor-scroll-snap"
+include: ip_zero_param.yaml
+
+properties:
+  activation-distance:
+    type: int
+    default: 4
+    description: Net sensor counts before choosing an axis, before scroll scaling
+  idle-reset-ms:
+    type: int
+    default: 200
+    description: Pause between gestures that permits choosing a new axis

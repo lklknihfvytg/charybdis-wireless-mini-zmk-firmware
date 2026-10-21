@@ -1,3 +1,4 @@
 zephyr_library()
 zephyr_include_directories(${APPLICATION_SOURCE_DIR}/include)
 zephyr_library_sources_ifdef(CONFIG_ZMK_BEHAVIOR_BATTERY_TEXT src/behavior_battery_text.c)
+zephyr_library_sources_ifdef(CONFIG_CHARYBDIS_SCROLL_SNAP src/input_processor_scroll_snap.c)

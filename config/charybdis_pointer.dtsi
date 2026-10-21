@@ -1,22 +1,32 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
 
+/ {
+    scroll_snap: scroll_snap {
+        compatible = "charybdis,input-processor-scroll-snap";
+        #input-processor-cells = <0>;
+        activation-distance = <4>;
+        idle-reset-ms = <200>;
+    };
+};
+
 &trackball_listener {
     /* base processor chain on all layers */
     /* Full sensor resolution: 2.5x the 2026-10-21 checkpoint's 2/5 scale. */
     input-processors = <&zip_xy_scaler 1 1>;
 
-    /* layer-8 scroll override */
+    /* SCROLL: choose an axis from raw XY before the existing 1/16 scale. */
     scroller: scroller {
         layers           = <7>;
         input-processors = <
+            &scroll_snap
             &zip_xy_scaler 1 16                              // Scales the scroll speed
             &zip_xy_to_scroll_mapper                         // Converts XY movement to scroll events
             &zip_scroll_transform (INPUT_TRANSFORM_Y_INVERT) // Inverts the scroll direction
         >;
     };
 
-    /* layer-7 slow-pointer override */
+    /* SLOW pointer override */
     slow_pointer: slow_pointer {
         layers           = <6>;
         input-processors = <&zip_xy_scaler 1 16>;
