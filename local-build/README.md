@@ -54,6 +54,30 @@ docker compose -f local-build/docker-compose.yml run --rm -e CONFIGURE_ONLY=1 bu
 
 Every normal build runs the same configuration check before compilation. It rejects missing flash storage, incorrect split roles, disabled BLE, and a right half without the sensor power rail. Configuration-only runs leave existing UF2 files untouched; they are not new firmware builds.
 
+The current pointer profile uses 800 CPI with a 1/1 movement scale (2.5 times
+the saved 2026-10-21 checkpoint's speed). The sensor uses its default 8 ms active
+RUN period; `CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN=0` forwards each motion
+sample without another software rate limiter. This targets about 125 samples/s
+before BLE transport; the actual USB report cadence depends on the radio link.
+The 1/16 slow-pointer and scroll scales, rest timings, 10-minute sleep timeout,
+and Bluetooth transmit power are unchanged. Normal builds disable USB logging.
+Battery-life and cursor-smoothness improvements require hardware measurement.
+
+The dongle profile also allows automatic BLE 2M PHY negotiation on the
+dongle/right link. The existing left firmware keeps using 1M. The central
+received-event queue is 32 entries instead of 5; dongle/right input queues are
+32 entries instead of 16; right-side connection, ACL and L2CAP transmit buffers
+are 6 instead of 3. These buffers provide room for separate X/Y notifications
+and simultaneous key traffic. This does not prove that previous stutters were
+queue overflows. Transmit power, connection interval/latency, sensor timing,
+and sleep settings remain unchanged from the first pointer profile.
+
+A 30-second Windows Raw Input test of the first pointer profile recorded about
+70 nonzero motion events/s, with median gaps around 14 ms and some gaps over
+100 ms, both with and without typing. The revised BLE/buffer configuration
+still needs the same test after flashing; configured sensor timing is not a
+measurement of host cursor smoothness.
+
 ### 3. Firmware Output
 
 Firmware files are placed in the `firmwares/` directory in the repository, grouped by format (bt/dongle) and keymap:
@@ -109,6 +133,20 @@ powershell -ExecutionPolicy Bypass -File .\local-build\capture-usb-log.ps1 -Port
 
 Use the device's actual COM port; omit `-Port` when exactly one COM port exists.
 Logs are saved under `build/logs`. During capture, press keys on both halves.
+
+To measure mouse events delivered to Windows without changing the firmware:
+
+```powershell
+powershell -NoProfile -STA -ExecutionPolicy Bypass -File .\local-build\measure-pointer.ps1 -Seconds 30
+```
+
+For the first 15 seconds, move only the trackball continuously. For the last
+15 seconds, keep moving it while typing. Leave other mice stationary. The script
+uses a message-only Raw Input window, keeps the current application focused,
+and saves mouse device IDs, arrival times and movement deltas to `build/logs`.
+It also reads the Windows hide-pointer-while-typing setting without changing it.
+These are host event arrival times, not a direct sensor or radio sampling-rate
+measurement; physical pauses and Windows event batching can affect the results.
 
 - Enable USB logging to troubleshoot the firmware while it's running.
   - This is disabled by default since it has a significant negative impact on battery life

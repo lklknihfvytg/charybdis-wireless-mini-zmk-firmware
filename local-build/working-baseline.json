@@ -1,0 +1,33 @@
+{
+  "confirmed_on": "2026-10-21",
+  "profile": "balanced-pointer-v2",
+  "board": "nice_nano@2.0.0/nrf52840/zmk",
+  "zmk_revision": "4dd95d7840eb3d5a3f59bb29fbf1ab054715ef85",
+  "zephyr_revision": "10ba6d0cb38bc3d258775d27982f707599320085",
+  "pmw3610_revision": "f6e234367b22508b5c0a6bcc82437c64f320089b",
+  "mouse_only_events_per_second": 85.58,
+  "mouse_and_typing_events_per_second": 86.75,
+  "median_host_event_gap_ms": 8,
+  "battery_life_measured": false,
+  "files": [
+    {
+      "side": "dongle",
+      "file": "firmwares/known-good/2026-10-21/charybdis_dongle.uf2",
+      "bytes": 493568,
+      "sha256": "b3e4eca70a05edb8ec6b5f0de474ef7c9f90861891a63d1b0edfd3a96922f139"
+    },
+    {
+      "side": "left",
+      "file": "firmwares/known-good/2026-10-21/charybdis_left.uf2",
+      "bytes": 379392,
+      "sha256": "2f8867e2618e68b891c8be5bbb3c702410874a457c6fde67bcf8000f26e97aec"
+    },
+    {
+      "side": "right",
+      "file": "firmwares/known-good/2026-10-21/charybdis_right.uf2",
+      "bytes": 398336,
+      "sha256": "8ba6bb4939b60a2fee42eda994f3569949a35195852ad3e3a223a68f8363ad7a"
+    }
+  ],
+  "keymap_sha256": "b4c184a19c8f0652e7ac47e2a855627bec35ba6d89a2b583a956a490e7df7004"
+}

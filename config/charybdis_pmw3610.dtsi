@@ -56,9 +56,8 @@
            fallback to normal downshift mode after ZMK goes into IDLE / SLEEP mode.
            thus, the sensor would be a `wakeup-source` */
 
-        force-awake-4ms-mode;
-        /* while force-awake is active, force sampling every 4ms instead of the
-           default 8ms. */
+        /* Use the default 8 ms RUN period (about 125 samples/s) while active.
+           Rest modes remain available after ZMK becomes idle. */
 
     };
 };
