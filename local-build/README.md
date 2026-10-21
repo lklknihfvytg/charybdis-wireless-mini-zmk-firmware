@@ -69,6 +69,10 @@ The 1/16 slow-pointer and scroll scales, rest timings, 10-minute sleep timeout,
 and Bluetooth transmit power are unchanged. Normal builds disable USB logging.
 Battery-life and cursor-smoothness improvements require hardware measurement.
 
+Sensor orientation is defined alongside its wiring in
+`config/charybdis_pmw3610.dtsi` using `swap-xy`, `invert-x` and `invert-y`.
+Do not add separate Kconfig orientation overrides.
+
 The dongle profile also allows automatic BLE 2M PHY negotiation on the
 dongle/right link. The existing left firmware keeps using 1M. The central
 received-event queue is 32 entries instead of 5; dongle/right input queues are
