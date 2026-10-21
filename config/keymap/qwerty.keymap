@@ -143,7 +143,8 @@
         };
 		
 		PercentPrint {
-            bindings = <&none>;
+            bindings = <&battery_text>;
+            pass-source;
             key-positions = <0>;
             timeout-ms = <50>;
 			layers = <NAV>;
@@ -157,6 +158,11 @@
     };
 
     behaviors {
+        battery_text: battery_text {
+            compatible = "zmk,behavior-battery-text";
+            #binding-cells = <0>;
+        };
+
         hm: homerow_mod {
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;

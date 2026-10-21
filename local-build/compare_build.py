@@ -17,7 +17,7 @@ def normalized_dts(text):
     return re.sub(r'\s+', '', text)
 
 
-def compare(baseline, build_dir, orientation=False, module=False, battery=False):
+def compare(baseline, build_dir, orientation=False, module=False, battery=False, battery_text=False):
     old_config = config(baseline / '.config')
     new_config = config(build_dir / 'zephyr/.config')
     old_dts = (baseline / 'zephyr.dts').read_text()
@@ -32,6 +32,26 @@ def compare(baseline, build_dir, orientation=False, module=False, battery=False)
     if battery:
         allowed.update(('CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING',
                         'CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_QUEUE_SIZE'))
+    if battery_text:
+        allowed.update(('CONFIG_DT_HAS_ZMK_BEHAVIOR_BATTERY_TEXT_ENABLED',
+                        'CONFIG_ZMK_BEHAVIOR_BATTERY_TEXT'))
+        combo = node_body(new_dts, 'PercentPrint')
+        if not (re.search(r'bindings\s*=\s*<\s*&battery_text\s*>\s*;', combo)
+                and re.search(r'\bpass-source\s*;', combo)
+                and re.search(r'key-positions\s*=\s*<\s*0x0\s*>', combo)
+                and re.search(r'layers\s*=\s*<\s*0x2\s*>', combo)):
+            raise ValueError('PercentPrint must pass the source of NAV position 0 to battery_text')
+        if len(re.findall(r'\bpass-source\s*;', new_dts)) != 1:
+            raise ValueError('Source forwarding must be enabled only for PercentPrint')
+        new_dts, count = re.subn(r'\bbattery_text\s*:\s*battery_text\s*\{[^{}]*\};', '', new_dts)
+        if count != 1:
+            raise ValueError('Expected exactly one battery_text behavior node')
+        new_dts = re.sub(r'bindings\s*=\s*<\s*&battery_text\s*>\s*;', 'bindings = < &none >;', new_dts)
+        new_dts = re.sub(r'\bpass-source\s*;', '', new_dts)
+        # References retain their symbolic labels; numeric phandle allocation shifts
+        # when a new referenced behavior is inserted, without changing wiring.
+        old_dts = re.sub(r'\bphandle\s*=\s*<[^>]*>\s*;', '', old_dts)
+        new_dts = re.sub(r'\bphandle\s*=\s*<[^>]*>\s*;', '', new_dts)
     differences = {key: (old_config.get(key, 'n'), new_config.get(key, 'n'))
                    for key in old_config.keys() | new_config.keys()
                    if old_config.get(key, 'n') != new_config.get(key, 'n')}
@@ -61,9 +81,10 @@ if __name__ == '__main__':
     parser.add_argument('--orientation-dts', action='store_true')
     parser.add_argument('--module', action='store_true')
     parser.add_argument('--battery', action='store_true')
+    parser.add_argument('--battery-text', action='store_true')
     args = parser.parse_args()
     try:
-        changes = compare(args.baseline, args.build_dir, args.orientation_dts, args.module, args.battery)
+        changes = compare(args.baseline, args.build_dir, args.orientation_dts, args.module, args.battery, args.battery_text)
     except (OSError, ValueError) as exc:
         parser.exit(1, f'Baseline comparison failed: {exc}\n')
     print(f'Baseline preserved; allowed Kconfig changes: {changes}')

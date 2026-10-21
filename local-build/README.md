@@ -98,8 +98,13 @@ Do not add separate Kconfig orientation overrides.
 
 The dongle receives battery levels from both peripherals using ZMK's standard
 split battery fetching. Their existing 60-second reporting interval is
-unchanged. This makes battery events available internally; `PercentPrint`
-remains disabled (`&none`) and USB does not automatically display the levels.
+unchanged. Hold NAV and press position `0` (the physical ESC key) to invoke
+`PercentPrint`: it types the cached left and right percentages as `73 81`,
+without percent signs, labels or a newline. Release other modifiers first.
+Allow the halves to connect and report their battery levels after startup.
+The trigger's originating peripheral identifies the left slot even if BLE
+connection order changes. Only this combo opts into source forwarding; other
+combos retain ZMK's original behavior. See [battery printing](BATTERY_PRINT.md).
 The optional BLE Battery Service Proxy and dongle Studio remain disabled.
 
 The dongle profile also allows automatic BLE 2M PHY negotiation on the

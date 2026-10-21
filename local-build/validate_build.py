@@ -45,6 +45,8 @@ def validate(build_dir, mode, side):
             require("CONFIG_ZMK_SPLIT_BLE_CENTRAL_PERIPHERALS", "2")
             require("CONFIG_ZMK_INPUT_SPLIT")
             require("CONFIG_ZMK_INPUT_LISTENER")
+            if config.get("CONFIG_ZMK_BEHAVIOR_BATTERY_TEXT") == "y":
+                require("CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING")
             # The dongle must contain a BLE proxy, not physical sensor hardware.
             if node_body(dts, "trackball"):
                 errors.append("Dongle DTS unexpectedly contains a physical trackball node")

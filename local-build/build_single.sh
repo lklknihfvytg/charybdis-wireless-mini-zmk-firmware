@@ -22,6 +22,13 @@ PMW_DRIVER="$REPO_ROOT/zmk-pmw3610-driver"
 if ! git -C "$PMW_DRIVER" apply --ignore-space-change --reverse --check "$PMW_PATCH" >/dev/null 2>&1; then
   git -C "$PMW_DRIVER" apply --ignore-space-change "$PMW_PATCH"
 fi
+# Preserve the originating peripheral only for combos explicitly opting in.
+# PercentPrint uses the left-hand trigger to keep output ordered left/right.
+COMBO_PATCH="$REPO_ROOT/patches/zmk-combo-pass-source.patch"
+if ! git -C "$REPO_ROOT/zmk" apply --reverse --check "$COMBO_PATCH" >/dev/null 2>&1; then
+  git -C "$REPO_ROOT/zmk" apply --check "$COMBO_PATCH"
+  git -C "$REPO_ROOT/zmk" apply "$COMBO_PATCH"
+fi
 west zephyr-export
 
 built=()

@@ -116,6 +116,7 @@ static void battery_text_work_handler(struct k_work *work) {
 static int on_battery_text_binding_pressed(struct zmk_behavior_binding *binding,
                                            struct zmk_behavior_binding_event event) {
     ARG_UNUSED(binding);
+    ARG_UNUSED(event);
 #if BATTERY_TEXT_HAS_TWO_PERIPHERALS
     if (state.busy) {
         return ZMK_BEHAVIOR_OPAQUE;
