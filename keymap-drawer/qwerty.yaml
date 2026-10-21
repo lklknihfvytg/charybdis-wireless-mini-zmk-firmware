@@ -58,12 +58,12 @@ layers:
   - '`'
   - {t: '!', h: F11}
   - {t: '@', h: F12}
-  - '#'
-  - $
+  - {t: '#', h: LSHFT}
+  - {t: $, h: LCTRL}
   - '%'
   - ^
-  - '&'
-  - '*'
+  - {t: '&', h: RCTRL}
+  - {t: '*', h: RSHFT}
   - (
   - )
   - F17
@@ -85,7 +85,7 @@ layers:
   - LSHFT
   - ''
   NAVIGATION:
-  - ''
+  - '&battery_text'
   - ''
   - HOME
   - UP
@@ -336,6 +336,48 @@ layers:
   - '&mkp MB2'
   - ''
   - ''
+  AUTO MOUSE:
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - '&mkp MB1'
+  - '&mkp MB2'
+  - '&mkp MB3'
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
+  - {t: ▽, type: trans}
 combos:
 - p: [4, 5]
   k: (
@@ -345,6 +387,7 @@ combos:
   k: '['
 - p: [18, 19]
   k: ']'
+  l: [BASE, NUMBERS, NAVIGATION, MEDIA, ADJUST, MOUSE, SLOW, SCROLL]
 - p: [28, 29]
   k: '{'
 - p: [30, 31]
@@ -353,6 +396,7 @@ combos:
   k: Sft+ F13
 - p: [19, 20]
   k: Sft+ F14
+  l: [BASE, NUMBERS, NAVIGATION, MEDIA, ADJUST, MOUSE, SLOW, SCROLL]
 - p: [0, 12]
   k: '~'
 - p: [12, 24]
