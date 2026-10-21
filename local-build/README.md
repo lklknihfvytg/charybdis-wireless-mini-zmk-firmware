@@ -193,6 +193,22 @@ It also reads the Windows hide-pointer-while-typing setting without changing it.
 These are host event arrival times, not a direct sensor or radio sampling-rate
 measurement; physical pauses and Windows event batching can affect the results.
 
+To compare the trackball with a wired mouse in one recording:
+
+```powershell
+powershell -NoProfile -STA -ExecutionPolicy Bypass -File .\local-build\measure-pointer.ps1 -CompareDevices
+```
+
+A panel shows a 5-second countdown, 20 seconds for trackball-only movement,
+5 seconds to change devices, then 20 seconds for mouse-only movement. Run in
+the interactive Windows user session; a separate sandbox account cannot see
+those devices. The panel does not take focus. Only mouse input is registered.
+Analyze the resulting CSV with
+`python local-build/analyze-pointer-comparison.py build/logs/pointer-TIMESTAMP.csv`.
+The comparison uses the middle 17 seconds of each phase and rejects recordings
+without two distinct, predominantly active devices. Results describe delivery
+of nonzero motion events to Windows, not USB polling or rendered frames.
+
 - Enable USB logging to troubleshoot the firmware while it's running.
   - This is disabled by default since it has a significant negative impact on battery life
   - For a diagnostic build, set `CONFIG_ZMK_USB_LOGGING=y` in the relevant side's configuration, then follow [ZMK's logging instructions](https://zmk.dev/docs/development/usb-logging). Restore the normal configuration afterward.

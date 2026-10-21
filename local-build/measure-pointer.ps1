@@ -1,6 +1,6 @@
-param([ValidateRange(1, 300)][int]$Seconds = 30)
+param([ValidateRange(1, 300)][int]$Seconds = 30, [switch]$CompareDevices, [switch]$ValidateOnly)
 $ErrorActionPreference = 'Stop'
-Add-Type -ReferencedAssemblies System.Windows.Forms -TypeDefinition @'
+Add-Type -ReferencedAssemblies System.Windows.Forms,System.Drawing -TypeDefinition @'
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +9,25 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+
+public sealed class PointerTestStatus : Form {
+    public readonly Label Status = new Label();
+    protected override bool ShowWithoutActivation { get { return true; } }
+    protected override CreateParams CreateParams {
+        get { CreateParams parameters = base.CreateParams; parameters.ExStyle |= 0x08000000; return parameters; }
+    }
+    public PointerTestStatus() {
+        Text="Pointer comparison"; TopMost=true; ShowInTaskbar=false;
+        FormBorderStyle=FormBorderStyle.FixedToolWindow;
+        StartPosition=FormStartPosition.Manual;
+        ClientSize=new System.Drawing.Size(390,100);
+        System.Drawing.Rectangle screen=Screen.PrimaryScreen.WorkingArea;
+        Location=new System.Drawing.Point(screen.Right-ClientSize.Width-20,screen.Top+20);
+        Status.Dock=DockStyle.Fill; Status.TextAlign=System.Drawing.ContentAlignment.MiddleCenter;
+        Status.Font=new System.Drawing.Font("Segoe UI",13);
+        Controls.Add(Status);
+    }
+}
 
 public sealed class PointerMeasurement : NativeWindow {
     [StructLayout(LayoutKind.Sequential)] struct Device {
@@ -62,8 +81,9 @@ public sealed class PointerMeasurement : NativeWindow {
         return GetRawInputDeviceInfo(device, 0x20000007, name, ref size)==UInt32.MaxValue
             ? device.ToInt64().ToString("X") : name.ToString();
     }
-    public static void Run(int seconds, string path) {
+    public static double Run(int seconds, string path, bool compare) {
         PointerMeasurement capture = new PointerMeasurement();
+        PointerTestStatus status=null;
         bool registered=false;
         UIntPtr timer=UIntPtr.Zero;
         try {
@@ -81,7 +101,15 @@ public sealed class PointerMeasurement : NativeWindow {
             if (!SystemParametersInfo(0x1020,0,out vanish,0))
                 throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
             Console.WriteLine("Windows HidePointerWhileTyping="+(vanish!=0));
-            Console.WriteLine("START: move trackball continuously. At 15 seconds, also type.");
+            if(compare) {
+                seconds=50;
+                status=new PointerTestStatus();
+                status.Status.Text="GET READY: TRACKBALL in 5 seconds";
+                status.Show();
+                Console.WriteLine("Follow the panel: 5s preparation, 20s TRACKBALL, 5s switch, 20s MOUSE.");
+            } else {
+                Console.WriteLine("START: move trackball continuously. At 15 seconds, also type.");
+            }
             capture.clock.Start();
             bool phasePrinted=false;
             Message message;
@@ -91,7 +119,14 @@ public sealed class PointerMeasurement : NativeWindow {
                 if (result==0) break;
                 TranslateMessage(ref message);
                 DispatchMessage(ref message);
-                if (!phasePrinted && capture.clock.Elapsed.TotalSeconds>=15) {
+                if(compare) {
+                    if(status.IsDisposed) break;
+                    double elapsed=capture.clock.Elapsed.TotalSeconds;
+                    if(elapsed<5) status.Status.Text="GET READY: TRACKBALL in "+Math.Ceiling(5-elapsed)+"s";
+                    else if(elapsed<25) status.Status.Text="TRACKBALL ONLY: keep circling\n"+Math.Ceiling(25-elapsed)+" seconds left";
+                    else if(elapsed<30) status.Status.Text="SWITCH TO WIRED MOUSE\nStart in "+Math.Ceiling(30-elapsed)+"s";
+                    else status.Status.Text="WIRED MOUSE ONLY: keep circling\n"+Math.Ceiling(50-elapsed)+" seconds left";
+                } else if (!phasePrinted && capture.clock.Elapsed.TotalSeconds>=15) {
                     Console.WriteLine("SECOND PHASE: keep moving the trackball and type.");
                     phasePrinted=true;
                 }
@@ -108,7 +143,9 @@ public sealed class PointerMeasurement : NativeWindow {
             }
             Console.WriteLine("Saved "+capture.samples.Count+" mouse events: "+path);
             foreach (string name in names.Values) Console.WriteLine("Device: "+name);
+            return capture.clock.Elapsed.TotalSeconds;
         } finally {
+            if(status!=null) status.Dispose();
             if (registered) RegisterRawInputDevices(new Device[]{new Device{page=1,usage=2,flags=1,target=IntPtr.Zero}},1,(uint)Marshal.SizeOf(typeof(Device)));
             if (timer!=UIntPtr.Zero) KillTimer(capture.Handle,timer);
             capture.DestroyHandle();
@@ -117,7 +154,19 @@ public sealed class PointerMeasurement : NativeWindow {
     }
 }
 '@
+if ($ValidateOnly) { Write-Output 'Pointer capture compiled; no recording started.'; exit 0 }
 $logDirectory = Join-Path (Split-Path $PSScriptRoot -Parent) 'build\logs'
 New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 $logPath = Join-Path $logDirectory ('pointer-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.csv')
-[PointerMeasurement]::Run($Seconds, $logPath)
+$elapsed = [PointerMeasurement]::Run($Seconds, $logPath, $CompareDevices.IsPresent)
+if ($CompareDevices) {
+    @{
+        mode = 'trackball-vs-wired-mouse'
+        elapsed_seconds = $elapsed
+        completed = ($elapsed -ge 50)
+        phases = @(
+            @{ label = 'trackball'; start_seconds = 5; end_seconds = 25 },
+            @{ label = 'wired_mouse'; start_seconds = 30; end_seconds = 50 }
+        )
+    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath ($logPath + '.phases.json') -Encoding UTF8
+}
