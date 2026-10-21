@@ -1,6 +1,6 @@
 // Documentation: https://zmk.dev/docs/development/hardware-integration/dongle
 #include <dt-bindings/zmk/matrix_transform.h>
-#include "charybdis-layouts.dtsi"
+#include "../../../config/charybdis-layouts.dtsi"
 
 &charybdis_physical_layout {
     transform = <&default_transform>;
@@ -65,4 +65,4 @@
     };
 };
 
-#include "charybdis_pointer.dtsi"
+#include "../../../config/charybdis_pointer.dtsi"

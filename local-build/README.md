@@ -52,6 +52,14 @@ keep the existing checkouts.
 
 The board target is `nice_nano@2.0.0/nrf52840/zmk`. The base `nice_nano` target lacks ZMK's NVS/flash defaults and the P0.13 external-power node required by the trackball. Do not replace the target with the base board name.
 
+The shields are loaded directly from this repository through the
+`boards/zephyr/module.yml` external module. Builds never copy boards or keymaps
+into ZMK's source tree. BT and dongle variants have unique shield names, so old
+injected shields cannot take precedence. Their shared matrix lives in
+`boards/shields/charybdis_common/charybdis.dtsi`; output UF2 names stay unchanged.
+`build_setup.sh` is a compatibility wrapper around the cached `build_single.sh`
+builder; it no longer copies the entire workspace into temporary directories.
+
 To check all three dongle configurations without compiling firmware:
 
 ```bash

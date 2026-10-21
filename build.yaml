@@ -4,9 +4,11 @@ board:
   - nice_nano@2.0.0/nrf52840/zmk
 
 shield:
-  - charybdis_left
-  - charybdis_right
-  - charybdis_dongle
+  - charybdis_left_bt
+  - charybdis_right_bt
+  - charybdis_left_dongle
+  - charybdis_right_dongle
+  - charybdis_dongle_central
   - settings_reset
 
 format:
@@ -19,6 +21,6 @@ keymap:
 
 include:
   - board: nice_nano@2.0.0/nrf52840/zmk
-    shield: charybdis_right
+    shield: charybdis_right_bt
     keymap: qwerty
     snippet: studio-rpc-usb-uart

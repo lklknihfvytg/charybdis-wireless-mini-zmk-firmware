@@ -102,37 +102,6 @@ jobs:
       with: { name: generated-keymaps, path: config/keymap }
 
     # ───────── stage keymaps and helper files ─────────
-    - name: Stage keymaps, overlays, and dtsi files into source tree
-      shell: bash
-      run: |
-        # Create overlays directory inside zmk/app
-        mkdir -p zmk/app/overlays
-
-        # Only for bt/dongle builds, copy in the single keymap and any helpers
-        if [[ "${{ matrix.combo.format }}" != "reset" ]]; then
-          cp config/keymap/${{ matrix.combo.keymap }}.keymap \
-             zmk/app/overlays/charybdis.keymap
-
-          # copy helper .dtsi files if they exist
-          cp config/*.dtsi zmk/app/overlays/ 2>/dev/null || true
-          cp config/keymap/*.dtsi zmk/app/overlays/ 2>/dev/null || true
-        fi
-
-    # ───────── Inject custom shields & helper DTSI files ─────────
-    - name: Inject custom shields & helper files
-      if: ${{ matrix.combo.format != 'reset' }}
-      shell: bash
-      run: |
-        ZMK_SHIELDS_DIR="$GITHUB_WORKSPACE/zmk/app/boards/shields"
-        mkdir -p "$ZMK_SHIELDS_DIR"
-        cp -r "boards/shields/charybdis_${{ matrix.combo.format }}" "$ZMK_SHIELDS_DIR/"
-        for d in "$ZMK_SHIELDS_DIR"/*; do
-          for f in charybdis-layouts.dtsi charybdis_pmw3610.dtsi charybdis_pointer.dtsi; do
-            [ -f "config/$f" ] && cp "config/$f" "$d/" || true
-          done
-        done
-
-    # ───────── Build ─────────
     - name: Build combo ${{ matrix.combo.name }}
       shell: bash
       working-directory: zmk/app
@@ -145,8 +114,8 @@ jobs:
         BD="${{ matrix.combo.board }}"    # nice_nano@2.0.0/nrf52840/zmk
 
         declare -A LIST=(
-          [bt]="charybdis_left charybdis_right"
-          [dongle]="charybdis_left charybdis_dongle_right charybdis_dongle"
+          [bt]="charybdis_left_bt charybdis_right_bt"
+          [dongle]="charybdis_left_dongle charybdis_right_dongle charybdis_dongle_central"
           [reset]="settings_reset"
         )
 
@@ -157,15 +126,24 @@ jobs:
 
         for SH in ${LIST[$FM]}; do
           BUILD_DIR=$(mktemp -d)
+          case "$SH" in
+            charybdis_left_*) SIDE=left ;;
+            charybdis_right_*) SIDE=right ;;
+            charybdis_dongle_central) SIDE=dongle ;;
+            settings_reset) SIDE=reset ;;
+          esac
+          OUTPUT_SH="charybdis_$SIDE"
           EXTRA_CONF_OPTION=()
-          OUTPUT_SH="$SH"
-          if [[ "$SH" == charybdis_dongle_right ]]; then
-            EXTRA_CONF_OPTION+=("-DEXTRA_CONF_FILE=$CONFIG_DIR/charybdis.conf;$CONFIG_DIR/charybdis_right.conf")
-            OUTPUT_SH=charybdis_right
+          if [[ "$SIDE" != reset ]]; then
+            EXTRA_CONF="$CONFIG_DIR/charybdis.conf"
+            [[ "$SIDE" == dongle ]] || EXTRA_CONF+=";$CONFIG_DIR/charybdis_$SIDE.conf"
+            EXTRA_CONF_OPTION=("-DEXTRA_CONF_FILE=$EXTRA_CONF")
+          else
+            OUTPUT_SH=settings_reset
           fi
 
           # studio RPC only on right half of BT builds
-          if [[ "$FM" == "bt" && "$SH" == *right ]]; then
+          if [[ "$FM" == "bt" && "$SIDE" == right ]]; then
             SNIPPET_OPTION="-DSNIPPET=studio-rpc-usb-uart"
           else
             SNIPPET_OPTION=""
@@ -173,7 +151,7 @@ jobs:
 
           # set keymap
           if [[ "$FM" != "reset" ]]; then
-            KEYMAP_OPTION="-DKEYMAP_FILE=overlays/charybdis.keymap"
+            KEYMAP_OPTION="-DKEYMAP_FILE=$CONFIG_DIR/keymap/$KM.keymap"
           else
             KEYMAP_OPTION=""
           fi
@@ -201,13 +179,12 @@ jobs:
             -b "$BD" \
             -- \
             "-DZMK_CONFIG=$CONFIG_DIR" \
+            "-DZMK_EXTRA_MODULES=$GITHUB_WORKSPACE/boards" \
             "-DSHIELD=$SH" \
             "$KEYMAP_OPTION" \
             "$SNIPPET_OPTION" \
             "${EXTRA_CONF_OPTION[@]}"
 
-          SIDE="${OUTPUT_SH#charybdis_}"
-          [[ "$FM" == reset ]] && SIDE=reset
           python3 "$GITHUB_WORKSPACE/local-build/validate_build.py" "$BUILD_DIR" --format "$FM" --side "$SIDE"
           cmake --build "$BUILD_DIR"
 

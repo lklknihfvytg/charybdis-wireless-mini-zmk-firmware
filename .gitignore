@@ -3,6 +3,8 @@ build/
 zmk/
 zephyr/
 !zephyr/module.yml
+!boards/zephyr/
+!boards/zephyr/module.yml
 modules/
 zmk-pmw3610-driver/
 local-build/logs.txt
