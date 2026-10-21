@@ -44,6 +44,12 @@ The dongle build creates `charybdis_dongle.uf2`, `charybdis_left.uf2`, and `char
 
 The first run downloads and initializes the ZMK/Zephyr workspace. Later builds reuse it and the per-target build directories. Running the container without extra arguments builds QWERTY Bluetooth firmware. To build another keymap or format, pass the script and its arguments as shown above.
 
+ZMK and the PMW3610 driver are pinned in `config/west.yml` to the revisions
+used by the hardware-tested baseline. ZMK's imported manifest pins its Zephyr
+and other dependencies. Dependency upgrades must be deliberate changes to
+these revisions, followed by `west update` and validation; normal rebuilds
+keep the existing checkouts.
+
 The board target is `nice_nano@2.0.0/nrf52840/zmk`. The base `nice_nano` target lacks ZMK's NVS/flash defaults and the P0.13 external-power node required by the trackball. Do not replace the target with the base board name.
 
 To check all three dongle configurations without compiling firmware:
