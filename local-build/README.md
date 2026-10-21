@@ -81,13 +81,14 @@ docker compose -f local-build/docker-compose.yml run --rm -e CONFIGURE_ONLY=1 bu
 Every normal build runs the same configuration check before compilation. It rejects missing flash storage, incorrect split roles, disabled BLE, and a right half without the sensor power rail. Configuration-only runs leave existing UF2 files untouched; they are not new firmware builds.
 
 The current pointer profile uses 800 CPI with a 1/1 movement scale, matching
-the saved hardware-tested baseline. The sensor uses its default 8 ms active
+the saved hardware-tested baseline. The sensor now uses a 4 ms active
 RUN period; `CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN=0` forwards each motion
-sample without another software rate limiter. This targets about 125 samples/s
+sample without another software rate limiter. This targets about 250 samples/s
 before BLE transport; the actual USB report cadence depends on the radio link.
 The 1/16 slow-pointer and scroll scales, rest timings, 10-minute sleep timeout,
 and Bluetooth transmit power are unchanged. Normal builds disable USB logging.
-Battery-life and cursor-smoothness improvements require hardware measurement.
+Compared with the previous 8 ms profile, active-mode power consumption may
+increase; the effect on battery life and host cursor smoothness needs measurement.
 
 See the [upstream migration record](UPSTREAM_MIGRATION.md) for the adopted
 changes, verification scope and preserved rollback bundle.

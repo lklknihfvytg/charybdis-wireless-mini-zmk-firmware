@@ -17,12 +17,23 @@ def normalized_dts(text):
     return re.sub(r'\s+', '', text)
 
 
-def compare(baseline, build_dir, orientation=False, module=False, battery=False, battery_text=False):
+def compare(baseline, build_dir, orientation=False, module=False, battery=False, battery_text=False, run4ms=False):
     old_config = config(baseline / '.config')
     new_config = config(build_dir / 'zephyr/.config')
     old_dts = (baseline / 'zephyr.dts').read_text()
     new_dts = (build_dir / 'zephyr/zephyr.dts').read_text()
     allowed = set()
+    if run4ms:
+        sensor = node_body(new_dts, 'trackball')
+        if not re.search(r'\bforce-awake-4ms-mode\s*;', sensor):
+            raise ValueError('The trackball must enable 4 ms RUN mode')
+        if not re.search(r'\bforce-awake\s*;', sensor):
+            raise ValueError('4 ms RUN mode requires force-awake')
+        if new_config.get('CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN') != '0':
+            raise ValueError('The software report limiter must remain disabled')
+        new_dts, count = re.subn(r'\bforce-awake-4ms-mode\s*;', '', new_dts)
+        if count != 1:
+            raise ValueError('Expected exactly one 4 ms RUN property')
     if orientation:
         for suffix in ('SWAP_XY', 'INVERT_X', 'INVERT_Y'):
             allowed.add('CONFIG_PMW3610_ALT_' + suffix)
@@ -70,7 +81,7 @@ def compare(baseline, build_dir, orientation=False, module=False, battery=False,
             if bits != 0xE0:
                 raise ValueError(f'Sensor orientation changed: {bits:#x}')
     if normalized_dts(old_dts) != normalized_dts(new_dts):
-        raise ValueError('Generated DTS changed beyond sensor orientation properties')
+        raise ValueError('Generated DTS changed beyond the explicitly allowed changes')
     return differences
 
 
@@ -82,9 +93,10 @@ if __name__ == '__main__':
     parser.add_argument('--module', action='store_true')
     parser.add_argument('--battery', action='store_true')
     parser.add_argument('--battery-text', action='store_true')
+    parser.add_argument('--run-4ms', action='store_true')
     args = parser.parse_args()
     try:
-        changes = compare(args.baseline, args.build_dir, args.orientation_dts, args.module, args.battery, args.battery_text)
+        changes = compare(args.baseline, args.build_dir, args.orientation_dts, args.module, args.battery, args.battery_text, args.run_4ms)
     except (OSError, ValueError) as exc:
         parser.exit(1, f'Baseline comparison failed: {exc}\n')
     print(f'Baseline preserved; allowed Kconfig changes: {changes}')
