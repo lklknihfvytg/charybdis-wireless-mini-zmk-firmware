@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 # === CONFIGURATION ===
-board = "nice_nano"
+board = "nice_nano@2.0.0/nrf52840/zmk"
 # automatically find all *.keymap filenames under ../config/keymap
 keymap_dir = Path(__file__).parent.parent / "config" / "keymap"
 keymaps = sorted(p.stem for p in keymap_dir.glob("*.keymap"))

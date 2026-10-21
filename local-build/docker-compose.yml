@@ -8,6 +8,8 @@ services:
     entrypoint: []
     command:
       - bash
-      - ./local-build/build_setup.sh
+      - ./local-build/build_single.sh
+      - qwerty
+      - bt
     tty: true
     stdin_open: true

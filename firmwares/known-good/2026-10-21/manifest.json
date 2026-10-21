@@ -1,0 +1,48 @@
+{
+  "confirmed_on": "2026-10-21",
+  "confirmation": "User confirmed both halves working together; trackball works.",
+  "board": "nice_nano@2.0.0/nrf52840/zmk",
+  "zmk_revision": "4dd95d7840eb3d5a3f59bb29fbf1ab054715ef85",
+  "zephyr_revision": "10ba6d0cb38bc3d258775d27982f707599320085",
+  "pmw3610_revision": "f6e234367b22508b5c0a6bcc82437c64f320089b",
+  "pmw3610_local_patch": "patches/pmw3610-wakeup-source.patch",
+  "dongle_usb_logging": true,
+  "files": [
+    {
+      "target": "dongle",
+      "file": "charybdis_dongle.uf2",
+      "source": "firmwares/diagnostics/charybdis_dongle_fast_debug.uf2",
+      "bytes": 614912,
+      "sha256": "43d581ffa70c8b2d9fe5758e15c7312a54c52c777d11c4860447f5b8c128e91a",
+      "config": "dongle.config.txt",
+      "config_sha256": "21336851f3c9efb34e0ff874d5cae4baa751610e70c727b9a0d9fc6f04a8082b"
+    },
+    {
+      "target": "left",
+      "file": "charybdis_left.uf2",
+      "source": "firmwares/charybdis_dongle/qwerty/charybdis_left.uf2",
+      "bytes": 379392,
+      "sha256": "2f8867e2618e68b891c8be5bbb3c702410874a457c6fde67bcf8000f26e97aec",
+      "config": "left.config.txt",
+      "config_sha256": "d57a5e942bd3e6ad4f9c11c9cc7937750c763d95587cf91b8b602d3b505def86"
+    },
+    {
+      "target": "right",
+      "file": "charybdis_right.uf2",
+      "source": "firmwares/charybdis_dongle/qwerty/charybdis_right.uf2",
+      "bytes": 398848,
+      "sha256": "c59089d6090e8795e4d6e8beb6f55827b586a54caddd32144306fdae00fa2133",
+      "config": "right.config.txt",
+      "config_sha256": "772e1e5b97c9d72335702deaf4f798312d0f9c15561d96ebf38f664bbc555313"
+    },
+    {
+      "target": "reset",
+      "file": "settings_reset.uf2",
+      "source": "firmwares/settings_reset.uf2",
+      "bytes": 105472,
+      "sha256": "0dd6be82134d011c8ee58794940f87e03b4eaf8e859ab336ef123bca190eef3a",
+      "config": "reset.config.txt",
+      "config_sha256": "a699a2cc244fe69fb52342ba5466d5c1f2c15dbc1f88f66383b71c102ac0d732"
+    }
+  ]
+}

@@ -28,14 +28,35 @@ Make sure you have:
 
 ### 2. Start the Build Container
 
+Build the QWERTY Bluetooth firmware with:
+
 ```bash
-cd local-build
-docker-compose run --rm builder
+docker compose -f local-build/docker-compose.yml run --rm builder bash ./local-build/build_single.sh qwerty bt
 ```
+
+To build all three QWERTY dongle firmware files, run:
+
+```bash
+docker compose -f local-build/docker-compose.yml run --rm builder bash ./local-build/build_single.sh qwerty dongle
+```
+
+The dongle build creates `charybdis_dongle.uf2`, `charybdis_left.uf2`, and `charybdis_right.uf2` in `firmwares/charybdis_dongle/qwerty/`. Change `qwerty` to another keymap name in `config/keymap/` as needed. Add `left` or `right` as a third argument to build only that half, for example: `docker compose -f local-build/docker-compose.yml run --rm builder bash ./local-build/build_single.sh qwerty dongle right`.
+
+The first run downloads and initializes the ZMK/Zephyr workspace. Later builds reuse it and the per-target build directories. Running the container without extra arguments builds QWERTY Bluetooth firmware. To build another keymap or format, pass the script and its arguments as shown above.
+
+The board target is `nice_nano@2.0.0/nrf52840/zmk`. The base `nice_nano` target lacks ZMK's NVS/flash defaults and the P0.13 external-power node required by the trackball. Do not replace the target with the base board name.
+
+To check all three dongle configurations without compiling firmware:
+
+```bash
+docker compose -f local-build/docker-compose.yml run --rm -e CONFIGURE_ONLY=1 builder bash ./local-build/build_single.sh qwerty dongle
+```
+
+Every normal build runs the same configuration check before compilation. It rejects missing flash storage, incorrect split roles, disabled BLE, and a right half without the sensor power rail. Configuration-only runs leave existing UF2 files untouched; they are not new firmware builds.
 
 ### 3. Firmware Output
 
-Firmware files will be placed in under the firmwares directory in the root of the repo on your host. They will be grouped by format (bt/dongle) and keymap:
+Firmware files are placed in the `firmwares/` directory in the repository, grouped by format (bt/dongle) and keymap:
 
 ```bash
 firmwares/
@@ -67,17 +88,27 @@ firmwares/
 This will give you an interactive bash prompt with all dependencies loaded, so you can run or debug the script manually:
 
 ```bash
-docker-compose run --rm --entrypoint bash builder
+docker compose -f local-build/docker-compose.yml run --rm --entrypoint bash builder
 ```
 Once inside the shell, you can execute the script manually, or go troubleshooting:
 
 ```bash
-bash ./local-build/build_setup.sh
+bash ./local-build/build_single.sh qwerty dongle
 ```
 
 ---
 
 ## Troubleshooting
+
+For a firmware built with USB logging, Windows can capture the serial output
+without installing a terminal application:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\local-build\capture-usb-log.ps1 -Port COM3 -Seconds 60
+```
+
+Use the device's actual COM port; omit `-Port` when exactly one COM port exists.
+Logs are saved under `build/logs`. During capture, press keys on both halves.
 
 - Enable USB logging to troubleshoot the firmware while it's running.
   - This is disabled by default since it has a significant negative impact on battery life
@@ -92,10 +123,10 @@ bash ./local-build/build_setup.sh
       - CONFIG_LOG_BACKEND_UART=y
       - CONFIG_USB_CDC_ACM=y
       - CONFIG_LOG_MODE_DEFERRED=n
-- If the firmware is not generated as expected, use the interactive shell method above to inspect `/workspaces/zmk-firmwares` or rerun the script with debugging.
+- If the firmware is not generated as expected, use the interactive shell method above to inspect `/workspaces/zmk/firmwares` or rerun the script with debugging.
 - Check the script output for any warnings or errors about missing shields, keymaps, or build failures. If you'd like to save the script output to a file for local parsing in a text editor start the build container with this command:
   ```bash
-  docker-compose run --rm builder > logs.txt 2>&1
+  docker compose -f local-build/docker-compose.yml run --rm builder > logs.txt 2>&1
   ```
 
 ---

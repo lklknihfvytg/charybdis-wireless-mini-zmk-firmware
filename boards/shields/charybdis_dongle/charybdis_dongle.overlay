@@ -1,23 +1,28 @@
 // Documentation: https://zmk.dev/docs/development/hardware-integration/dongle
 #include <dt-bindings/zmk/matrix_transform.h>
 #include "charybdis-layouts.dtsi"
-#include "charybdis_pmw3610.dtsi"
-#include "charybdis_pointer.dtsi"
 
 &charybdis_physical_layout {
     transform = <&default_transform>;
 };
 
-&trackball_split {
-  status = "okay";
-};
-
-/* enable the listener on central */
-&trackball_listener {
-  status = "okay";
-};
-
 / {
+    // The dongle receives input over BLE; the physical SPI sensor is on the right.
+    split_inputs {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        trackball_split: trackball_split@0 {
+            compatible = "zmk,input-split";
+            reg = <0>;
+            status = "okay";
+        };
+    };
+
+    trackball_listener: trackball_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&trackball_split>;
+    };
     chosen {
         zmk,kscan           = &kscan0;
         zmk,physical-layout = &charybdis_physical_layout;
@@ -59,3 +64,5 @@
         local-name = "charybdis_right";
     };
 };
+
+#include "charybdis_pointer.dtsi"

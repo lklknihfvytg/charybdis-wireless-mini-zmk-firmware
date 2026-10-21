@@ -31,6 +31,12 @@ git config --global --add safe.directory /workspaces/zmk/zmk
 echo "🛠️  Updating west modules..."
 west update
 
+PMW_PATCH="$REPO_ROOT/patches/pmw3610-wakeup-source.patch"
+PMW_DRIVER="$REPO_ROOT/zmk-pmw3610-driver"
+if ! git -C "$PMW_DRIVER" apply --ignore-space-change --reverse --check "$PMW_PATCH" >/dev/null 2>&1; then
+    git -C "$PMW_DRIVER" apply --ignore-space-change "$PMW_PATCH"
+fi
+
 # Set environment variables in the current shell
 echo "🛠️  Setting Zephyr build environment..."
 west zephyr-export
@@ -164,7 +170,13 @@ for shield in "${shields[@]}"; do
 
   for target in "${shield_targets[@]}"; do
     for keymap in "${keymaps[@]}"; do
-      board="nice_nano"
+      board="nice_nano@2.0.0/nrf52840/zmk"
+      EXTRA_CONF_OPTION=()
+      OUTPUT_TARGET="$target"
+      if [[ "$target" == charybdis_dongle_right ]]; then
+        EXTRA_CONF_OPTION+=("-DEXTRA_CONF_FILE=$BASE_DIR/$CONFIG_PATH/charybdis.conf;$BASE_DIR/$CONFIG_PATH/charybdis_right.conf")
+        OUTPUT_TARGET=charybdis_right
+      fi
       artifact_name="${target}-${keymap}-${board}-zmk"
       BUILD_DIR=$(mktemp -d)
       printf "🗂  %s\n" "→ Build dir: $BUILD_DIR"
@@ -186,14 +198,16 @@ for shield in "${shields[@]}"; do
       cp "$KEYMAP_TEMP/${keymap}.keymap" \
          "$BASE_DIR/$CONFIG_PATH/charybdis.keymap"
 
-      west build --pristine -s app \
+      west build --pristine --cmake-only -s app \
         -d "$BUILD_DIR" \
         -b "$board" \
         $STUDIO_SNIPPET \
         $USB_LOGGING_SNIPPET \
         -- \
           -DZMK_CONFIG="$BASE_DIR/$CONFIG_PATH" \
-          -DSHIELD="$target" $ZMK_LOAD_ARG
+          -DSHIELD="$target" $ZMK_LOAD_ARG "${EXTRA_CONF_OPTION[@]}"
+      python3 "$REPO_ROOT/local-build/validate_build.py" "$BUILD_DIR" --format "${shield#charybdis_}" --side "${OUTPUT_TARGET#charybdis_}"
+      cmake --build "$BUILD_DIR"
       echo ""
       
       # Find the built firmware (prefer .uf2, else fallback)
@@ -225,7 +239,7 @@ for shield in "${shields[@]}"; do
         chmod 777 "$FIRMWARES_DIR"
       fi
 
-      DEST="$FIRMWARES_DIR/${target}.${ARTIFACT_EXT}"
+      DEST="$FIRMWARES_DIR/${OUTPUT_TARGET}.${ARTIFACT_EXT}"
       echo "Publishing $ARTIFACT_SRC → $DEST"
       cp "$ARTIFACT_SRC" "$DEST"
       chmod 666 "$DEST"
@@ -241,7 +255,7 @@ done
 # --- BUILD RESET FIRMWARE ---
 setup_sandbox "settings_reset"
 cd "$BUILD_REPO/zmk"
-RESET_BOARD="nice_nano"
+RESET_BOARD="nice_nano@2.0.0/nrf52840/zmk"
 BUILD_DIR=$(mktemp -d)
 FIRM_PATH="/workspaces/zmk/firmwares/settings_reset.uf2"
 printf "🗂  %s\n" "→ Build dir: $BUILD_DIR"
@@ -255,6 +269,7 @@ west build --pristine -s app \
     -DCONFIG_NRF_STORE_REBOOT_TYPE_GPREGRET=n \
     > build.log 2>&1 # ignore all the keymap warnings
 
+python3 "$REPO_ROOT/local-build/validate_build.py" "$BUILD_DIR" --format reset --side reset
 cp "$BUILD_DIR/zephyr/zmk.uf2" "$FIRM_PATH"
 chmod 666 "$FIRM_PATH"
 

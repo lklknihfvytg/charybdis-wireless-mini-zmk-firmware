@@ -1,0 +1,3 @@
+zephyr_library()
+zephyr_include_directories(${APPLICATION_SOURCE_DIR}/include)
+zephyr_library_sources_ifdef(CONFIG_ZMK_BEHAVIOR_BATTERY_TEXT src/behavior_battery_text.c)

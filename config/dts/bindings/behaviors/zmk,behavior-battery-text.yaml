@@ -1,0 +1,8 @@
+# Copyright (c) 2026 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Type the cached split peripheral battery levels as two numbers.
+
+compatible: "zmk,behavior-battery-text"
+
+include: zero_param.yaml

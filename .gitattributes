@@ -1,0 +1,4 @@
+local-build/*.sh text eol=lf
+patches/*.patch text eol=lf -whitespace
+firmwares/known-good/**/*.txt text eol=lf
+firmwares/known-good/**/*.uf2 binary

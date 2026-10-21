@@ -1,0 +1,82 @@
+diff --git a/app/dts/bindings/zmk,combos.yaml b/app/dts/bindings/zmk,combos.yaml
+index 5ab0085d..8ce2f1da 100644
+--- a/app/dts/bindings/zmk,combos.yaml
++++ b/app/dts/bindings/zmk,combos.yaml
+@@ -23,5 +23,7 @@ child-binding:
+       default: -1
+     slow-release:
+       type: boolean
++    pass-source:
++      type: boolean
+     layers:
+       type: array
+diff --git a/app/src/combo.c b/app/src/combo.c
+index 7d869fa4..0cb62c76 100644
+--- a/app/src/combo.c
++++ b/app/src/combo.c
+@@ -55,6 +55,7 @@ struct combo_cfg {
+     // if slow release is set, the combo releases when the last key is released.
+     // otherwise, the combo releases when the first key is released.
+     bool slow_release;
++    bool pass_source;
+ };
+ 
+ struct active_combo {
+@@ -84,6 +85,7 @@ struct active_combo {
+                         .key_position_len = DT_PROP_LEN(n, key_positions),                         \
+                         .behavior = ZMK_KEYMAP_EXTRACT_BINDING(0, n),                              \
+                         .slow_release = DT_PROP(n, slow_release),                                  \
++                        .pass_source = DT_PROP(n, pass_source),                                    \
+                         .layer_mask = NODE_PROP_BITMASK(n, layers),                                \
+                     }, ),                                                                          \
+                 ())
+@@ -279,12 +281,12 @@ static int release_pressed_keys() {
+ }
+ 
+ static inline int press_combo_behavior(int combo_idx, const struct combo_cfg *combo,
+-                                       int32_t timestamp) {
++                                       int32_t timestamp, uint8_t source) {
+     struct zmk_behavior_binding_event event = {
+         .position = ZMK_VIRTUAL_KEY_POSITION_COMBO(combo_idx),
+         .timestamp = timestamp,
+ #if IS_ENABLED(CONFIG_ZMK_SPLIT)
+-        .source = ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
++        .source = combo->pass_source ? source : ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
+ #endif
+     };
+ 
+@@ -294,12 +296,12 @@ static inline int press_combo_behavior(int combo_idx, const struct combo_cfg *co
+ }
+ 
+ static inline int release_combo_behavior(int combo_idx, const struct combo_cfg *combo,
+-                                         int32_t timestamp) {
++                                         int32_t timestamp, uint8_t source) {
+     struct zmk_behavior_binding_event event = {
+         .position = ZMK_VIRTUAL_KEY_POSITION_COMBO(combo_idx),
+         .timestamp = timestamp,
+ #if IS_ENABLED(CONFIG_ZMK_SPLIT)
+-        .source = ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
++        .source = combo->pass_source ? source : ZMK_POSITION_STATE_CHANGE_SOURCE_LOCAL,
+ #endif
+     };
+ 
+@@ -345,7 +347,8 @@ static void activate_combo(int combo_idx) {
+     }
+     move_pressed_keys_to_active_combo(active_combo);
+     press_combo_behavior(combo_idx, &combos[combo_idx],
+-                         active_combo->key_positions_pressed[0].data.timestamp);
++                         active_combo->key_positions_pressed[0].data.timestamp,
++                         active_combo->key_positions_pressed[0].data.source);
+ }
+ 
+ static void deactivate_combo(int active_combo_index) {
+@@ -382,7 +385,8 @@ static bool release_combo_key(int32_t position, int64_t timestamp) {
+             active_combo->key_positions_pressed_count--;
+             const struct combo_cfg *c = &combos[active_combo->combo_idx];
+             if ((c->slow_release && all_keys_released) || (!c->slow_release && all_keys_pressed)) {
+-                release_combo_behavior(active_combo->combo_idx, c, timestamp);
++                release_combo_behavior(active_combo->combo_idx, c, timestamp,
++                                       active_combo->key_positions_pressed[0].data.source);
+             }
+             if (all_keys_released) {
+                 deactivate_combo(combo_idx);

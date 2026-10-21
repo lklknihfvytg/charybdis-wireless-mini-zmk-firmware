@@ -3,3 +3,8 @@
 
 # Except for this .gitignore file itself
 !.gitignore
+
+# User-confirmed rollback checkpoint, kept independently of build outputs.
+!known-good/
+!known-good/2026-10-21/
+!known-good/2026-10-21/*

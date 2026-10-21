@@ -79,6 +79,11 @@ jobs:
         west init -l --mf $GITHUB_WORKSPACE/config/west.yml "$GITHUB_WORKSPACE/config"
         echo "🔄 Updating and synchronizing all repositories in the workspace."
         west update
+        PMW_PATCH="$GITHUB_WORKSPACE/patches/pmw3610-wakeup-source.patch"
+        PMW_DRIVER="$GITHUB_WORKSPACE/zmk-pmw3610-driver"
+        if ! git -C "$PMW_DRIVER" apply --ignore-space-change --reverse --check "$PMW_PATCH" >/dev/null 2>&1; then
+          git -C "$PMW_DRIVER" apply --ignore-space-change "$PMW_PATCH"
+        fi
         echo "📦 Exporting Zephyr for external build system integration."
         west zephyr-export
 
@@ -137,11 +142,11 @@ jobs:
         KM="${{ matrix.combo.keymap }}"
         FM="${{ matrix.combo.format }}"   # bt | dongle | reset
         NM="${{ matrix.combo.name }}"
-        BD="${{ matrix.combo.board }}"    # nice_nano_v2
+        BD="${{ matrix.combo.board }}"    # nice_nano@2.0.0/nrf52840/zmk
 
         declare -A LIST=(
           [bt]="charybdis_left charybdis_right"
-          [dongle]="charybdis_left charybdis_right charybdis_dongle"
+          [dongle]="charybdis_left charybdis_dongle_right charybdis_dongle"
           [reset]="settings_reset"
         )
 
@@ -152,6 +157,12 @@ jobs:
 
         for SH in ${LIST[$FM]}; do
           BUILD_DIR=$(mktemp -d)
+          EXTRA_CONF_OPTION=()
+          OUTPUT_SH="$SH"
+          if [[ "$SH" == charybdis_dongle_right ]]; then
+            EXTRA_CONF_OPTION+=("-DEXTRA_CONF_FILE=$CONFIG_DIR/charybdis.conf;$CONFIG_DIR/charybdis_right.conf")
+            OUTPUT_SH=charybdis_right
+          fi
 
           # studio RPC only on right half of BT builds
           if [[ "$FM" == "bt" && "$SH" == *right ]]; then
@@ -185,17 +196,23 @@ jobs:
           # tree $GITHUB_WORKSPACE
 
           echo "🛠 Kicking off the firmware build..."
-          west build -p \
+          west build -p --cmake-only \
             -d "$BUILD_DIR" \
             -b "$BD" \
             -- \
             "-DZMK_CONFIG=$CONFIG_DIR" \
             "-DSHIELD=$SH" \
             "$KEYMAP_OPTION" \
-            "$SNIPPET_OPTION"
+            "$SNIPPET_OPTION" \
+            "${EXTRA_CONF_OPTION[@]}"
+
+          SIDE="${OUTPUT_SH#charybdis_}"
+          [[ "$FM" == reset ]] && SIDE=reset
+          python3 "$GITHUB_WORKSPACE/local-build/validate_build.py" "$BUILD_DIR" --format "$FM" --side "$SIDE"
+          cmake --build "$BUILD_DIR"
 
           ART=$(if [[ -f "$BUILD_DIR/zephyr/zmk.uf2" ]]; then echo zmk.uf2; else echo zmk.bin; fi)
-          cp "$BUILD_DIR/zephyr/$ART" "$GITHUB_WORKSPACE/out/$NM/$SH.${ART##*.}"
+          cp "$BUILD_DIR/zephyr/$ART" "$GITHUB_WORKSPACE/out/$NM/$OUTPUT_SH.${ART##*.}"
         done
 
     - name: Upload firmware bundle

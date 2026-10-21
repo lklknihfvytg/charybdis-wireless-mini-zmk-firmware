@@ -10,7 +10,11 @@ manifest:
     - name: zmk
       remote: zmkfirmware
       revision: main
-      import: app/west.yml
+      import:
+        file: app/west.yml
+        name-blocklist:
+          - tflite-micro
+          - thrift
 
     - name: zmk-pmw3610-driver
       remote: 280Zo
