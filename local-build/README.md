@@ -93,6 +93,11 @@ increase; the effect on battery life and host cursor smoothness needs measuremen
 See the [upstream migration record](UPSTREAM_MIGRATION.md) for the adopted
 changes, verification scope and preserved rollback bundle.
 
+Trackball [Scroll Snap and the guarded automatic J/K/L mouse layer](POINTER_FEATURES.md)
+are configured locally. The automatic layer waits for a typing pause and
+deliberate movement; its thresholds and the remaining J/K/L ambiguity are
+documented there.
+
 Sensor orientation is defined alongside its wiring in
 `config/charybdis_pmw3610.dtsi` using `swap-xy`, `invert-x` and `invert-y`.
 Do not add separate Kconfig orientation overrides.

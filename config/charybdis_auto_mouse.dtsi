@@ -1,0 +1,21 @@
+/* Included by the QWERTY keymap after its layer definitions. */
+#ifdef CHARYBDIS_HAS_TRACKBALL_LISTENER
+/ {
+    auto_mouse: auto_mouse {
+        compatible = "charybdis,input-processor-auto-mouse";
+        #input-processor-cells = <0>;
+        layer = <AUTO_MOUSE>;
+        click-positions = <19 20 21>; /* J / K / L */
+        require-prior-idle-ms = <1000>;
+        activation-distance = <80>;
+        activation-window-ms = <200>;
+        timeout-ms = <800>;
+    };
+};
+
+&trackball_listener {
+    /* Detection never consumes or scales cursor movement. Overrides for manual
+       SCROLL/SLOW skip this chain, so they cannot activate AUTO_MOUSE. */
+    input-processors = <&auto_mouse &zip_xy_scaler 1 1>;
+};
+#endif

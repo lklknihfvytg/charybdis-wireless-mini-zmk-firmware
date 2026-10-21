@@ -1,0 +1,25 @@
+description: Automatic mouse layer guarded by physical typing and deliberate motion
+compatible: "charybdis,input-processor-auto-mouse"
+include: ip_zero_param.yaml
+
+properties:
+  layer:
+    type: int
+    required: true
+  click-positions:
+    type: array
+    required: true
+    description: Physical positions allowed to click without cancelling the layer
+  require-prior-idle-ms:
+    type: int
+    default: 1000
+  activation-distance:
+    type: int
+    default: 80
+    description: Net raw movement along one axis within the activation window
+  activation-window-ms:
+    type: int
+    default: 200
+  timeout-ms:
+    type: int
+    default: 800

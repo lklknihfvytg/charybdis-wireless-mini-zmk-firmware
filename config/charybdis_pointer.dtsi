@@ -1,6 +1,9 @@
 #include <input/processors.dtsi>
 #include <dt-bindings/zmk/input_transform.h>
 
+/* The QWERTY keymap opts into auto mouse only on shields with this listener. */
+#define CHARYBDIS_HAS_TRACKBALL_LISTENER 1
+
 / {
     scroll_snap: scroll_snap {
         compatible = "charybdis,input-processor-scroll-snap";

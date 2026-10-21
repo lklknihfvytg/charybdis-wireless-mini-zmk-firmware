@@ -12,6 +12,18 @@ def verify(build_dir, artifact, mode, side):
     errors = validate(build_dir, mode, side)
     if errors:
         raise ValueError('; '.join(errors))
+    config_text = (build_dir / 'zephyr/.config').read_text()
+    if 'CONFIG_CHARYBDIS_AUTO_MOUSE=y' in config_text:
+        import re
+        map_text = (build_dir / 'zephyr/zmk.map').read_text()
+        subscriptions = dict((name, int(address, 16)) for address, name in re.findall(
+            r'^\s*(0x[0-9a-fA-F]+)\s+(zmk_event_sub_\w+zmk_position_state_changed)\s*$',
+            map_text, re.M))
+        guard = subscriptions.get('zmk_event_sub_charybdis_auto_mousezmk_position_state_changed')
+        for listener in ('behavior_hold_tap', 'combo', 'keymap'):
+            other = subscriptions.get('zmk_event_sub_' + listener + 'zmk_position_state_changed')
+            if guard is None or other is None or guard >= other:
+                raise ValueError('Auto mouse must observe physical keys before ' + listener)
     data = artifact.read_bytes()
     if not data or len(data) % 512:
         raise ValueError('UF2 length must be a nonzero multiple of 512')
